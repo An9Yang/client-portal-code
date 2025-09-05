@@ -21,6 +21,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, Loader2, AlertCircle, Users, Copy, Check } from "lucide-react";
 import { client } from "@/lib/api";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/stores/auth";
 import type { AuthErrorResponse } from "@/types/auth";
 
 const loginSchema = z.object({
@@ -46,6 +48,8 @@ export function LoginForm() {
   const [demoAccounts, setDemoAccounts] = useState<DemoAccount[]>([]);
   const [showDemoAccounts, setShowDemoAccounts] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const authStore = useAuthStore();
 
   const {
     register,
@@ -84,31 +88,16 @@ export function LoginForm() {
     setError(null);
     
     try {
-      const response = await client.api.auth.login.$post({
-        json: data
-      });
+      await authStore.login(data.email, data.password, data.rememberMe);
+      toast.success("Login successful!");
       
-      if (response.ok) {
-        const result = await response.json();
-        
-        // Store authentication data
-        localStorage.setItem("auth_token", result.token);
-        localStorage.setItem("refresh_token", result.refreshToken);
-        localStorage.setItem("user", JSON.stringify(result.user));
-        
-        toast.success(`Welcome back, ${result.user.name}!`);
-        
-        // Redirect to dashboard (will be implemented later)
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 1000);
-      } else {
-        const errorData = await response.json() as AuthErrorResponse;
-        setError(errorData.message || errorData.error || "Invalid email or password. Please try again.");
-      }
-    } catch (err) {
+      // Use React Router navigation instead of window.location
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 500);
+    } catch (err: any) {
       console.error("Login error:", err);
-      setError("Connection failed. Please check your internet connection and try again.");
+      setError(err.message || "Invalid email or password. Please try again.");
     } finally {
       setIsLoading(false);
     }

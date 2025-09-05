@@ -79,16 +79,39 @@ export const useAuthStore = create<AuthState>()(
       },
       
       checkAuth: async () => {
+        set({ isLoading: true });
         const token = Cookies.get('token');
-        if (!token) {
-          set({ isAuthenticated: false });
+        
+        // Also check localStorage for backward compatibility
+        const localToken = localStorage.getItem('auth_token');
+        const localUser = localStorage.getItem('user');
+        
+        if (!token && !localToken) {
+          set({ isAuthenticated: false, isLoading: false });
           return;
+        }
+        
+        // If we have localStorage data but no cookies, migrate it
+        if (!token && localToken && localUser) {
+          try {
+            const user = JSON.parse(localUser);
+            Cookies.set('token', localToken);
+            set({
+              user,
+              token: localToken,
+              isAuthenticated: true,
+              isLoading: false
+            });
+            return;
+          } catch (e) {
+            console.error('Failed to parse user from localStorage:', e);
+          }
         }
         
         try {
           const response = await fetch('/api/auth/me', {
             headers: {
-              Authorization: `Bearer ${token}`
+              Authorization: `Bearer ${token || localToken}`
             }
           });
           
@@ -96,19 +119,25 @@ export const useAuthStore = create<AuthState>()(
             const data = await response.json();
             set({
               user: data.user,
-              token,
-              isAuthenticated: true
+              token: token || localToken,
+              isAuthenticated: true,
+              isLoading: false
             });
           } else {
             throw new Error('Invalid token');
           }
         } catch (error) {
+          // Clear all auth data
           Cookies.remove('token');
           Cookies.remove('refreshToken');
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem('user');
           set({
             user: null,
             token: null,
-            isAuthenticated: false
+            isAuthenticated: false,
+            isLoading: false
           });
         }
       },
