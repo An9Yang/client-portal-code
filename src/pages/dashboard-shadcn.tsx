@@ -29,9 +29,10 @@ import {
   ArrowUpRight,
   Target
 } from "lucide-react";
+import { useAuthStore } from "@/stores/auth";
 
 export default function DashboardShadcn() {
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const { user } = useAuthStore();
 
   const metrics = [
     {

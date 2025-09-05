@@ -8,6 +8,7 @@
  */
 import { useState } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/stores/auth";
 import {
   Sidebar,
   SidebarContent,
@@ -88,13 +89,10 @@ export default function DashboardLayoutShadcn() {
   const location = useLocation();
   const navigate = useNavigate();
   const [notifications] = useState(5);
-
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const { user, logout } = useAuthStore();
 
   const handleLogout = () => {
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("user");
+    logout();
     navigate("/login");
   };
 

@@ -35,9 +35,10 @@ import {
   AlertCircle,
   Info
 } from "lucide-react";
+import { useAuthStore } from "@/stores/auth";
 
 export default function SettingsShadcn() {
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const { user } = useAuthStore();
 
   const settingsStats = [
     {
