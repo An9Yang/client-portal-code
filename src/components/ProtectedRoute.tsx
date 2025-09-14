@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { Spin } from '@arco-design/web-react';
+import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
 
 export default function ProtectedRoute() {
@@ -12,13 +12,11 @@ export default function ProtectedRoute() {
 
   if (isLoading) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh'
-      }}>
-        <Spin size={32} tip="Loading..." />
+      <div className="flex items-center justify-center h-screen">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
       </div>
     );
   }
