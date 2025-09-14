@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HashRouter as BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import LoginShadcn from "./pages/login-shadcn";
@@ -23,11 +23,11 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster richColors position="top-right" />
-      <BrowserRouter>
+      <HashRouter>
         <Routes>
           <Route path="/login" element={<LoginShadcn />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          
+
           <Route element={<ProtectedRoute />}>
             <Route element={<DashboardLayoutShadcn />}>
               <Route path="/dashboard" element={<DashboardShadcn />} />
@@ -42,10 +42,10 @@ const App = () => (
               <Route path="/settings" element={<SettingsShadcn />} />
             </Route>
           </Route>
-          
+
           <Route path="*" element={<NotFoundShadcn />} />
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );
