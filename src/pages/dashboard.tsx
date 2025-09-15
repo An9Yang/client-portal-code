@@ -1,6 +1,7 @@
 /**
  * Dashboard Page - Professional shadcn style dashboard
  * Unified version following shadcn.com design principles
+ * Enhanced with data linkage to Analytics and Reports
  */
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,46 +25,63 @@ import {
   Download,
   Calendar,
   Clock,
-  CircleDot
+  CircleDot,
+  ArrowRight,
+  FileText,
+  BarChart3,
+  FileBarChart,
+  AlertCircle
 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export default function Dashboard() {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
+  const [selectedPeriod, setSelectedPeriod] = useState("7days");
 
-  // Metrics data
+  // Metrics data - aligned with Analytics page
   const metrics = [
     {
-      title: "Total Revenue",
-      value: "$45,231",
+      title: "Monthly Revenue",
+      value: "$125,450",
       change: "+12.5%",
       trend: "up",
       icon: DollarSign,
-      description: "from last month"
+      description: "from last month",
+      link: "/analytics",
+      linkText: "View Analytics"
     },
     {
       title: "Active Projects",
-      value: "12",
-      change: "+2",
+      value: "24",
+      change: "+3",
       trend: "up",
       icon: Briefcase,
-      description: "this week"
+      description: "this week",
+      link: "/projects",
+      linkText: "Manage Projects"
     },
     {
-      title: "Team Members",
-      value: "48",
+      title: "Team Utilization",
+      value: "78%",
       change: "+5.2%",
       trend: "up",
       icon: Users,
-      description: "growth rate"
+      description: "efficiency rate",
+      link: "/analytics",
+      linkText: "Team Analytics"
     },
     {
-      title: "Completion Rate",
-      value: "89%",
-      change: "-2.1%",
-      trend: "down",
+      title: "Client Satisfaction",
+      value: "4.8/5",
+      change: "+0.3",
+      trend: "up",
       icon: Activity,
-      description: "vs last week"
+      description: "average rating",
+      link: "/analytics",
+      linkText: "Client Insights"
     }
   ];
 
@@ -103,10 +121,60 @@ export default function Dashboard() {
   ];
 
   const upcomingTasks = [
-    { task: "Review Q4 Reports", due: "Today", priority: "high", assignee: "You" },
-    { task: "Client Meeting - TechCorp", due: "Tomorrow", priority: "medium", assignee: "Team" },
-    { task: "Submit Project Proposal", due: "Dec 10", priority: "high", assignee: "You" },
-    { task: "Team Performance Reviews", due: "Dec 12", priority: "low", assignee: "You" }
+    { task: "Review Q4 Reports", due: "Today", priority: "high", assignee: "You", type: "report" },
+    { task: "Client Meeting - TechCorp", due: "Tomorrow", priority: "medium", assignee: "Team", type: "meeting" },
+    { task: "Submit Project Proposal", due: "Dec 10", priority: "high", assignee: "You", type: "project" },
+    { task: "Team Performance Reviews", due: "Dec 12", priority: "low", assignee: "You", type: "review" }
+  ];
+
+  // Recent reports - linked to Reports page
+  const recentReports = [
+    {
+      name: "Q4 Executive Summary",
+      type: "Executive",
+      generated: "2 hours ago",
+      status: "ready",
+      size: "2.4 MB"
+    },
+    {
+      name: "Financial Performance Report",
+      type: "Financial",
+      generated: "Yesterday",
+      status: "ready",
+      size: "1.8 MB"
+    },
+    {
+      name: "Project Status Update",
+      type: "Project",
+      generated: "3 days ago",
+      status: "ready",
+      size: "3.1 MB"
+    }
+  ];
+
+  // Key insights - from Analytics
+  const keyInsights = [
+    {
+      title: "Revenue Target",
+      current: 125450,
+      target: 150000,
+      percentage: 84,
+      status: "on-track"
+    },
+    {
+      title: "Project Delivery",
+      current: 89,
+      target: 95,
+      percentage: 89,
+      status: "warning"
+    },
+    {
+      title: "Client Retention",
+      current: 92,
+      target: 90,
+      percentage: 102,
+      status: "exceeded"
+    }
   ];
 
   const teamActivity = [
@@ -138,7 +206,7 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Select defaultValue="7days">
+          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
             <SelectTrigger className="w-[160px]">
               <Calendar className="mr-2 h-4 w-4" />
               <SelectValue placeholder="Select period" />
@@ -150,17 +218,33 @@ export default function Dashboard() {
               <SelectItem value="90days">Last 90 days</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm">
-            <Download className="mr-2 h-4 w-4" />
-            Export
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/reports')}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            Generate Report
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/analytics')}
+          >
+            <BarChart3 className="mr-2 h-4 w-4" />
+            Analytics
           </Button>
         </div>
       </div>
 
-      {/* Metrics Cards */}
+      {/* Metrics Cards - Interactive */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {metrics.map((metric, index) => (
-          <Card key={index}>
+          <Card
+            key={index}
+            className="cursor-pointer transition-all hover:shadow-md"
+            onClick={() => metric.link && navigate(metric.link)}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 {metric.title}
@@ -175,10 +259,62 @@ export default function Dashboard() {
                 </span>
                 {' '}{metric.description}
               </p>
+              {metric.linkText && (
+                <div className="flex items-center gap-1 mt-3 text-xs text-primary hover:underline">
+                  {metric.linkText}
+                  <ArrowRight className="h-3 w-3" />
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}
       </div>
+
+      {/* Key Insights Bar */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Key Performance Indicators</CardTitle>
+              <CardDescription>
+                Track progress against your business targets
+              </CardDescription>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/analytics')}
+            >
+              View All Analytics
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-6 md:grid-cols-3">
+            {keyInsights.map((insight, index) => (
+              <div key={index} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{insight.title}</span>
+                  <Badge
+                    variant={insight.status === 'exceeded' ? 'default' :
+                            insight.status === 'warning' ? 'secondary' : 'outline'}
+                    className={insight.status === 'exceeded' ? 'bg-green-50 text-green-700' :
+                              insight.status === 'warning' ? 'bg-amber-50 text-amber-700' : ''}
+                  >
+                    {insight.percentage}%
+                  </Badge>
+                </div>
+                <Progress value={insight.percentage} className="h-2" />
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>${insight.current.toLocaleString()}</span>
+                  <span>Target: ${insight.target.toLocaleString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Main Content */}
       <div className="grid gap-6 lg:grid-cols-7">
@@ -192,8 +328,13 @@ export default function Dashboard() {
                   A list of your recent projects and their status.
                 </CardDescription>
               </div>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/projects')}
+              >
+                View All
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </CardHeader>
@@ -271,6 +412,57 @@ export default function Dashboard() {
                   </div>
                 </div>
               ))}
+            </CardContent>
+          </Card>
+
+          {/* Recent Reports */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">Recent Reports</CardTitle>
+                  <CardDescription>Generated reports ready for download</CardDescription>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate('/reports')}
+                >
+                  <FileBarChart className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {recentReports.map((report, index) => (
+                <div key={index} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                     onClick={() => navigate('/reports')}>
+                  <div className="flex items-start space-x-3">
+                    <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {report.name}
+                      </p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Badge variant="outline" className="px-1.5 py-0">
+                          {report.type}
+                        </Badge>
+                        <span>·</span>
+                        <span>{report.generated}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <Download className="h-3 w-3 text-muted-foreground" />
+                </div>
+              ))}
+              <Button
+                variant="outline"
+                className="w-full"
+                size="sm"
+                onClick={() => navigate('/reports')}
+              >
+                <FileText className="mr-2 h-3 w-3" />
+                Create New Report
+              </Button>
             </CardContent>
           </Card>
 
