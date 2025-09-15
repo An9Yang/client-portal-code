@@ -51,6 +51,7 @@ import {
   Edit, Trash2, Eye, MessageSquare, Video, Send
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface TeamMember {
   id: string;
@@ -91,6 +92,12 @@ export default function Team() {
   const [filterDepartment, setFilterDepartment] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [showAddMember, setShowAddMember] = useState(false);
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showMessageDialog, setShowMessageDialog] = useState(false);
+  const [messagingMember, setMessagingMember] = useState<TeamMember | null>(null);
+  const [showRemoveDialog, setShowRemoveDialog] = useState(false);
+  const [removingMember, setRemovingMember] = useState<TeamMember | null>(null);
 
   // Team members data aligned with Projects and Tasks
   const teamMembers: TeamMember[] = [
@@ -522,24 +529,41 @@ export default function Team() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/team/${member.id}`)}>
                             <Eye className="mr-2 h-4 w-4" />
                             View Profile
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setEditingMember(member);
+                            setShowEditDialog(true);
+                          }}>
                             <Edit className="mr-2 h-4 w-4" />
                             Edit Member
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setMessagingMember(member);
+                            setShowMessageDialog(true);
+                          }}>
                             <MessageSquare className="mr-2 h-4 w-4" />
                             Send Message
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            toast.info(`Starting video call with ${member.name}...`);
+                            setTimeout(() => {
+                              toast.success(`Video call with ${member.name} started`);
+                            }, 2000);
+                          }}>
                             <Video className="mr-2 h-4 w-4" />
                             Start Video Call
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-600">
+                          <DropdownMenuItem
+                            className="text-red-600"
+                            onClick={() => {
+                              setRemovingMember(member);
+                              setShowRemoveDialog(true);
+                            }}
+                          >
                             <Trash2 className="mr-2 h-4 w-4" />
                             Remove Member
                           </DropdownMenuItem>
@@ -677,7 +701,11 @@ export default function Team() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Button variant="ghost" size="sm">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/team/${member.id}`)}
+                          >
                             View Details
                           </Button>
                         </TableCell>
@@ -943,6 +971,208 @@ export default function Team() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Edit Member Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Team Member</DialogTitle>
+            <DialogDescription>
+              Update {editingMember?.name}'s information and role.
+            </DialogDescription>
+          </DialogHeader>
+          {editingMember && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-name">Full Name</Label>
+                  <Input id="edit-name" defaultValue={editingMember.name} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-email">Email</Label>
+                  <Input id="edit-email" type="email" defaultValue={editingMember.email} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-role">Role</Label>
+                  <Input id="edit-role" defaultValue={editingMember.role} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-department">Department</Label>
+                  <Select defaultValue={editingMember.department}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Engineering">Engineering</SelectItem>
+                      <SelectItem value="Design">Design</SelectItem>
+                      <SelectItem value="Management">Management</SelectItem>
+                      <SelectItem value="Marketing">Marketing</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-phone">Phone</Label>
+                  <Input id="edit-phone" defaultValue={editingMember.phone} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-location">Location</Label>
+                  <Input id="edit-location" defaultValue={editingMember.location} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-skills">Skills</Label>
+                <Textarea
+                  id="edit-skills"
+                  defaultValue={editingMember.skills.join(", ")}
+                  className="min-h-[80px]"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-rate">Hourly Rate ($)</Label>
+                  <Input
+                    id="edit-rate"
+                    type="number"
+                    defaultValue={editingMember.hourlyRate}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select defaultValue={editingMember.status}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="busy">Busy</SelectItem>
+                      <SelectItem value="away">Away</SelectItem>
+                      <SelectItem value="offline">Offline</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={() => {
+                  toast.success(`${editingMember.name}'s profile has been updated`);
+                  setShowEditDialog(false);
+                }}>
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Send Message Dialog */}
+      <Dialog open={showMessageDialog} onOpenChange={setShowMessageDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Send Message</DialogTitle>
+            <DialogDescription>
+              Send a message to {messagingMember?.name}
+            </DialogDescription>
+          </DialogHeader>
+          {messagingMember && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback>{messagingMember.id}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium">{messagingMember.name}</p>
+                  <p className="text-sm text-muted-foreground">{messagingMember.role}</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="message-subject">Subject</Label>
+                <Input id="message-subject" placeholder="Message subject..." />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="message-content">Message</Label>
+                <Textarea
+                  id="message-content"
+                  placeholder="Type your message here..."
+                  className="min-h-[120px]"
+                />
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Mail className="h-4 w-4" />
+                <span>Message will be sent to {messagingMember.email}</span>
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setShowMessageDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={() => {
+                  toast.success(`Message sent to ${messagingMember.name}`);
+                  setShowMessageDialog(false);
+                }}>
+                  <Send className="mr-2 h-4 w-4" />
+                  Send Message
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Remove Member Confirmation Dialog */}
+      <Dialog open={showRemoveDialog} onOpenChange={setShowRemoveDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Remove Team Member</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove {removingMember?.name} from the team?
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          {removingMember && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback>{removingMember.id}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium">{removingMember.name}</p>
+                  <p className="text-sm text-muted-foreground">{removingMember.role}</p>
+                </div>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2 text-amber-600">
+                  <AlertCircle className="h-4 w-4" />
+                  <span>Active projects: {removingMember.projects}</span>
+                </div>
+                <div className="flex items-center gap-2 text-amber-600">
+                  <AlertCircle className="h-4 w-4" />
+                  <span>Pending tasks: {removingMember.tasks.inProgress}</span>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setShowRemoveDialog(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    toast.success(`${removingMember.name} has been removed from the team`);
+                    setShowRemoveDialog(false);
+                  }}
+                >
+                  Remove Member
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -6,10 +6,13 @@ import Login from "./pages/login";
 import Dashboard from "./pages/dashboard";
 import Analytics from "./pages/analytics";
 import Reports from "./pages/reports";
+import ReportDetail from "./pages/report-detail";
 import Projects from "./pages/projects";
 import ProjectDetail from "./pages/project-detail";
 import Tasks from "./pages/tasks";
+import TaskDetail from "./pages/task-detail";
 import Team from "./pages/team";
+import TeamMemberDetail from "./pages/team-member-detail";
 import Calendar from "./pages/calendar";
 import Messages from "./pages/messages";
 import Settings from "./pages/settings";
@@ -33,10 +36,13 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/reports/:id" element={<ReportDetail />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="/projects/:id" element={<ProjectDetail />} />
               <Route path="/tasks" element={<Tasks />} />
+              <Route path="/tasks/:id" element={<TaskDetail />} />
               <Route path="/team" element={<Team />} />
+              <Route path="/team/:id" element={<TeamMemberDetail />} />
               <Route path="/calendar" element={<Calendar />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/settings" element={<Settings />} />

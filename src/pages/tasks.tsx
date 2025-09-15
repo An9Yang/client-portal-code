@@ -23,13 +23,24 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import {
   Plus, Search, Filter, LayoutGrid, List, MoreVertical,
   Calendar, Users, Clock, AlertCircle, CheckCircle2,
   MessageSquare, Paperclip, Tag, Flag, ArrowRight,
   CircleDot, Circle, CheckCircle, XCircle, Timer,
-  TrendingUp, Activity, BarChart3
+  TrendingUp, Activity, BarChart3, Edit, Trash2, Eye
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -57,6 +68,10 @@ export default function Tasks() {
   const [filterProject, setFilterProject] = useState("all");
   const [filterAssignee, setFilterAssignee] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deletingTask, setDeletingTask] = useState<Task | null>(null);
 
   // Task data aligned with Projects
   const tasks: Task[] = [
@@ -318,7 +333,10 @@ export default function Tasks() {
   };
 
   const TaskCard = ({ task }: { task: Task }) => (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+    <Card
+      className="hover:shadow-md transition-shadow cursor-pointer"
+      onClick={() => navigate(`/tasks/TASK-${task.id.toString().padStart(3, '0')}`)}
+    >
       <CardContent className="p-4 space-y-3">
         <div className="flex items-start justify-between">
           <div className="space-y-1 flex-1">
@@ -337,10 +355,46 @@ export default function Tasks() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>View Details</DropdownMenuItem>
-              <DropdownMenuItem>Edit Task</DropdownMenuItem>
-              <DropdownMenuItem>Change Status</DropdownMenuItem>
-              <DropdownMenuItem>Delete</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/tasks/TASK-${task.id.toString().padStart(3, '0')}`);
+                }}
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                View Details
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingTask(task);
+                  setShowEditDialog(true);
+                }}
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Edit Task
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toast.success(`Task status updated`);
+                }}
+              >
+                <CircleDot className="mr-2 h-4 w-4" />
+                Change Status
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-red-600"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeletingTask(task);
+                  setShowDeleteDialog(true);
+                }}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Task
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -720,6 +774,182 @@ export default function Tasks() {
           </CardContent>
         </Card>
       )}
+
+      {/* Edit Task Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Task</DialogTitle>
+            <DialogDescription>
+              Update task information and details
+            </DialogDescription>
+          </DialogHeader>
+          {editingTask && (
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-title">Task Title</Label>
+                <Input id="edit-title" defaultValue={editingTask.title} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-description">Description</Label>
+                <Textarea
+                  id="edit-description"
+                  defaultValue={editingTask.description}
+                  className="min-h-[100px]"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-status">Status</Label>
+                  <Select defaultValue={editingTask.status}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todo">To Do</SelectItem>
+                      <SelectItem value="in-progress">In Progress</SelectItem>
+                      <SelectItem value="review">Review</SelectItem>
+                      <SelectItem value="done">Done</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-priority">Priority</Label>
+                  <Select defaultValue={editingTask.priority}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="urgent">Urgent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-assignee">Assignee</Label>
+                  <Select defaultValue={editingTask.assignee}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="SW">Sarah Wilson</SelectItem>
+                      <SelectItem value="MC">Michael Chen</SelectItem>
+                      <SelectItem value="ER">Emma Rodriguez</SelectItem>
+                      <SelectItem value="AJ">Alex Johnson</SelectItem>
+                      <SelectItem value="DL">David Lee</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-project">Project</Label>
+                  <Select defaultValue={editingTask.project}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="E-Commerce Platform">E-Commerce Platform</SelectItem>
+                      <SelectItem value="Mobile Banking App">Mobile Banking App</SelectItem>
+                      <SelectItem value="Healthcare Portal">Healthcare Portal</SelectItem>
+                      <SelectItem value="SaaS Dashboard">SaaS Dashboard</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-estimated">Estimated Hours</Label>
+                  <Input
+                    id="edit-estimated"
+                    type="number"
+                    defaultValue={editingTask.estimatedHours}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-due">Due Date</Label>
+                  <Input
+                    id="edit-due"
+                    type="date"
+                    defaultValue={editingTask.dueDate}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-tags">Tags (comma separated)</Label>
+                <Input
+                  id="edit-tags"
+                  defaultValue={editingTask.tags.join(", ")}
+                  placeholder="frontend, api, urgent"
+                />
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={() => {
+                  toast.success(`Task "${editingTask.title}" has been updated`);
+                  setShowEditDialog(false);
+                }}>
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Task Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Task</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this task? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          {deletingTask && (
+            <div className="space-y-4">
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="font-medium">{deletingTask.title}</p>
+                <p className="text-sm text-muted-foreground">{deletingTask.project}</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <Badge className={getPriorityColor(deletingTask.priority)}>
+                    {deletingTask.priority}
+                  </Badge>
+                  <Badge variant="outline">{deletingTask.status}</Badge>
+                </div>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2 text-amber-600">
+                  <AlertCircle className="h-4 w-4" />
+                  <span>All comments and attachments will be permanently deleted</span>
+                </div>
+                <div className="flex items-center gap-2 text-amber-600">
+                  <AlertCircle className="h-4 w-4" />
+                  <span>This task has {deletingTask.comments} comments and {deletingTask.attachments} attachments</span>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    toast.success(`Task "${deletingTask.title}" has been deleted`);
+                    setShowDeleteDialog(false);
+                  }}
+                >
+                  Delete Task
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -21,8 +21,10 @@ import {
   CalendarDays, Timer, Eye, Send, Printer, Share2, Activity
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useNavigate } from "react-router-dom";
 
 export default function Reports() {
+  const navigate = useNavigate();
   const [selectedReportType, setSelectedReportType] = useState("executive");
   const [dateRange, setDateRange] = useState("last-month");
   const [selectedFormat, setSelectedFormat] = useState("pdf");
@@ -526,7 +528,8 @@ export default function Reports() {
                   {recentReports.map((report, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors"
+                      className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer"
+                      onClick={() => navigate(`/reports/RPT-${(index + 1).toString().padStart(3, '0')}`)}
                     >
                       <div className="flex items-center gap-4">
                         <div className="p-2 bg-primary/10 rounded">
@@ -566,13 +569,28 @@ export default function Reports() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/reports/RPT-${(index + 1).toString().padStart(3, '0')}`);
+                          }}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <Download className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <Share2 className="h-4 w-4" />
                         </Button>
                       </div>
